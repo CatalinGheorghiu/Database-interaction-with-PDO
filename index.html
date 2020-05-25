@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Interaction avec la base de données (PDO)</title>
+    <link rel="stylesheet" href="./css/prism.css">
+</head>
+
+<body>
+    <h1>Interaction avec la base de données (PDO)</h1>
+    <pre
+        class=" language-php line-numbers"><code class=" language-php"><span class="token php language-php"><span class="token delimiter important">&lt;?php</span>
+
+	<span class="token comment">//	Définition des informations de connexion à la base de données</span>
+	<span class="token function">define</span><span class="token punctuation">(</span><span class="token single-quoted-string string">'DATABASE_DSN'</span><span class="token punctuation">,</span> <span class="token single-quoted-string string">'mysql:host=localhost;dbname=MyDatabase;charset=utf8'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">define</span><span class="token punctuation">(</span><span class="token single-quoted-string string">'DATABASE_USERNAME'</span><span class="token punctuation">,</span> <span class="token single-quoted-string string">'root'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">define</span><span class="token punctuation">(</span><span class="token single-quoted-string string">'DATABASE_PASSWORD'</span><span class="token punctuation">,</span> <span class="token single-quoted-string string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//	Connexion à la base de données</span>
+	<span class="token variable">$dbh</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PDO</span>
+	<span class="token punctuation">(</span>
+		<span class="token constant">DATABASE_DSN</span><span class="token punctuation">,</span>
+		<span class="token constant">DATABASE_USERNAME</span><span class="token punctuation">,</span>
+		<span class="token constant">DATABASE_PASSWORD</span><span class="token punctuation">,</span>
+		<span class="token punctuation">[</span>
+			<span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">ATTR_ERRMODE</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">ERRMODE_EXCEPTION</span><span class="token punctuation">,</span>
+			<span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">ATTR_DEFAULT_FETCH_MODE</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">FETCH_ASSOC</span>
+		<span class="token punctuation">]</span>
+	<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//	Requête récupérant tous les utilisateurs</span>
+	<span class="token variable">$query</span> <span class="token operator">=</span> <span class="token single-quoted-string string">'SELECT * FROM Users'</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Exécution de la requête</span>
+	<span class="token variable">$sth</span> <span class="token operator">=</span> <span class="token variable">$dbh</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">query</span><span class="token punctuation">(</span><span class="token variable">$query</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Récupération des résultats</span>
+	<span class="token variable">$users</span> <span class="token operator">=</span> <span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">fetchAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//	Requête récupérant l'utilisateur ayant l'identifiant transmis via l'URL (chaîne de requête)</span>
+	<span class="token variable">$query</span> <span class="token operator">=</span> <span class="token single-quoted-string string">'SELECT * FROM Users WHERE id = :id'</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Préparation de la requête</span>
+	<span class="token variable">$sth</span> <span class="token operator">=</span> <span class="token variable">$dbh</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">prepare</span><span class="token punctuation">(</span><span class="token variable">$query</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Association de l'identifiant de l'utilisateur à récupérer</span>
+	<span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">bindValue</span><span class="token punctuation">(</span><span class="token single-quoted-string string">':id'</span><span class="token punctuation">,</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token single-quoted-string string">'id'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">PARAM_INT</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Exécution de la requête</span>
+	<span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">execute</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Récupération du résultat</span>
+	<span class="token variable">$user</span> <span class="token operator">=</span> <span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">fetch</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//	Requête ajoutant un utilisateur (exemple basé sur la soumission d'un formulaire d'inscription)</span>
+	<span class="token variable">$query</span> <span class="token operator">=</span> <span class="token single-quoted-string string">'INSERT INTO Users (firstName, lastName) VALUES (?, ?)'</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Préparation de la requête</span>
+	<span class="token variable">$sth</span> <span class="token operator">=</span> <span class="token variable">$dbh</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">prepare</span><span class="token punctuation">(</span><span class="token variable">$query</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Association des paramètres de l'utilisateur à ajouter</span>
+	<span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">bindValue</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token single-quoted-string string">'firstName'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">PARAM_STR</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">bindValue</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token single-quoted-string string">'lastName'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token constant">PDO</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token constant">PARAM_STR</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//	Exécution de la requête</span>
+	<span class="token variable">$sth</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">execute</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <h2>Ressources</h2>
+    <ol>
+        <li><a href="https://www.php.net/manual/fr/book.pdo.php">PDO</a></li>
+        <li><a href="https://www.php.net/manual/fr/ref.pdo-mysql.connection.php">DSN de PDO_MySQL (ligne 4)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdo.setattribute.php">Attributs de PDO (lignes 15 et 16)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdo.query.php">PDO::query (ligne 23)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdostatement.fetchall.php">PDOStatement::fetchAll (ligne 25)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdo.prepare.php">PDO::prepare (lignes 30 et 41)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdostatement.bindvalue.php">PDOStatement::bindValue (lignes 32, 43 et
+                44)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdostatement.execute.php">PDOStatement::execute (lignes 34 et 46)</a>
+        </li>
+        <li><a href="https://www.php.net/manual/fr/pdostatement.fetch.php">PDOStatement::fetch (ligne 36)</a></li>
+        <li><a href="https://www.php.net/manual/fr/pdo.constants.php">Constantes pré-définies de PDO</a></li>
+    </ol>
+    <picture>
+        <img src="./img/logigram.svg" alt="Logigramme">
+        <legend>Logigramme</legend>
+    </picture>
+    <script src="./js/prism.js"></script>
+
+</body>
+
+</html>
